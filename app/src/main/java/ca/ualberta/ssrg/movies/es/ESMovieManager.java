@@ -36,7 +36,6 @@ public class ESMovieManager {
 
 	public ESMovieManager(String search) {
 		gson = new Gson();
-		searchMovies(search, null);
 	}
 
 	/**
@@ -81,7 +80,7 @@ public class ESMovieManager {
 	 * Get movies with the specified search string. If the search does not
 	 * specify fields, it searches on all the fields.
 	 */
-	public void searchMovies(String searchString, String field) {
+	public Movies searchMovies(String searchString, String field) {
 		Movies result = new Movies();
 
 		/**
@@ -109,9 +108,9 @@ public class ESMovieManager {
 
 		searchRequest.setHeader("Accept", "application/json");
 		searchRequest.setEntity(stringEntity);
-		
+
 		HttpClient httpClient = new DefaultHttpClient();
-		
+
 		HttpResponse response = null;
 		try {
 			response = httpClient.execute(searchRequest);
@@ -120,15 +119,15 @@ public class ESMovieManager {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
-		
+
 		/**
 		 * Parses the response of a search
 		 */
 		Type searchResponseType = new TypeToken<SearchResponse<Movie>>() {
 		}.getType();
-		
+		SearchResponse<Movie> esResponse;
 		try {
-			SearchResponse<Movie> esResponse = gson.fromJson(
+			esResponse = gson.fromJson(
 					new InputStreamReader(response.getEntity().getContent()),
 					searchResponseType);
 		} catch (JsonIOException e) {
@@ -140,9 +139,13 @@ public class ESMovieManager {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
-		
-		// Extract the movies from the esResponse and put them in result
 
-		movies.notifyObservers();
+		// Extract the movies from the esResponse and put them in result
+		for (SearchHit<Movie> hit : esResponse.getHits().getHits()){
+			result.add(hit.getSource());
+		};
+		result.notifyObservers();
+
+		return result;
 	}
 }

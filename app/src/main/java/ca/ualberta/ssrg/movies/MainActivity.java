@@ -74,6 +74,10 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onResume() {
 		super.onResume();
+
+		SearchThread thread = new SearchThread("*");
+
+		thread.start();
 		
 		
 
@@ -103,9 +107,11 @@ public class MainActivity extends Activity {
 	public void search(View view) {
 		movies.clear();
 
-		// TODO: Extract search query from text view
-		
-		// TODO: Run the search thread
+		//search stuff
+		SearchThread thread = new SearchThread("123");
+
+		thread.start();
+
 		
 	}
 	
@@ -131,7 +137,17 @@ public class MainActivity extends Activity {
 
 
 	class SearchThread extends Thread {
-		// TODO: Implement search thread
+		private String search;
+		public SearchThread(String search){
+			this.search = search;
+
+		}
+		@Override
+		public void run(){
+			movies.clear();
+			movies.addAll(movieManager.searchMovies(search, null));
+			notifyUpdated();
+		}
 		
 	}
 
